@@ -10,44 +10,67 @@ export interface ButtonOptions {
   onClick: () => void;
 }
 
-/** 共通のボタン（矩形＋テキストのコンテナ）。クリック音とホバー拡大付き。 */
+export interface Button {
+  bg: Phaser.GameObjects.Rectangle;
+  text: Phaser.GameObjects.Text;
+  setLabel(label: string): void;
+  disable(): void;
+}
+
+/**
+ * 共通ボタン。
+ * 背景の矩形そのものを当たり判定にすることで、ボタン全面で確実に反応する
+ * （コンテナにヒット領域を設定する方式だと中央付近しか反応しないことがあるため避ける）。
+ * クリック音とホバー拡大つき。
+ */
 export function makeButton(
   scene: Phaser.Scene,
   x: number,
   y: number,
   label: string,
   opts: ButtonOptions,
-): Phaser.GameObjects.Container {
+): Button {
   const w = opts.width ?? 320;
   const h = opts.height ?? 64;
   const color = opts.color ?? 0x3a3350;
 
-  const bg = scene.add.rectangle(0, 0, w, h, color).setStrokeStyle(2, 0xffffff, 0.2);
+  const bg = scene.add.rectangle(x, y, w, h, color).setStrokeStyle(2, 0xffffff, 0.2);
   const text = scene.add
-    .text(0, 0, label, {
+    .text(x, y, label, {
       fontFamily: 'sans-serif',
       fontSize: opts.fontSize ?? '26px',
       color: opts.textColor ?? '#ffffff',
     })
     .setOrigin(0.5);
 
-  const container = scene.add.container(x, y, [bg, text]);
-  container.setSize(w, h);
-  container.setInteractive(
-    new Phaser.Geom.Rectangle(-w / 2, -h / 2, w, h),
-    Phaser.Geom.Rectangle.Contains,
-  );
-  container.on(Phaser.Input.Events.POINTER_DOWN, () => {
+  let enabled = true;
+
+  // 矩形(Rectangle)は既定で全面が当たり判定になる
+  bg.setInteractive({ useHandCursor: true });
+  bg.on(Phaser.Input.Events.POINTER_DOWN, () => {
+    if (!enabled) return;
     Sfx.click();
     opts.onClick();
   });
-  container.on(Phaser.Input.Events.POINTER_OVER, () => container.setScale(1.04));
-  container.on(Phaser.Input.Events.POINTER_OUT, () => container.setScale(1));
-  return container;
-}
+  bg.on(Phaser.Input.Events.POINTER_OVER, () => {
+    if (!enabled) return;
+    bg.setScale(1.04);
+    text.setScale(1.04);
+  });
+  bg.on(Phaser.Input.Events.POINTER_OUT, () => {
+    bg.setScale(1);
+    text.setScale(1);
+  });
 
-/** ボタンのラベル文字列を更新する（list[1] がテキスト）。 */
-export function setButtonLabel(button: Phaser.GameObjects.Container, label: string): void {
-  const text = button.list[1] as Phaser.GameObjects.Text | undefined;
-  text?.setText(label);
+  return {
+    bg,
+    text,
+    setLabel: (next: string) => text.setText(next),
+    disable: () => {
+      enabled = false;
+      bg.disableInteractive();
+      bg.setAlpha(0.5);
+      text.setAlpha(0.5);
+    },
+  };
 }

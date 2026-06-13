@@ -7,6 +7,7 @@ import { Gem } from '../objects/Gem';
 import { COLORS } from '../theme';
 import { SaveManager } from '../state/SaveManager';
 import { Sfx } from '../audio/Sfx';
+import { makeButton } from '../ui/Button';
 
 export interface GameSceneData {
   levelIndex?: number;
@@ -104,36 +105,18 @@ export class GameScene extends Phaser.Scene {
         .setOrigin(0.5, 0);
     }
 
-    // リトライ（下部中央）
-    const retry = this.add
-      .text(w / 2, h - 24, '↻ リトライ', {
-        fontFamily: 'sans-serif',
-        fontSize: '24px',
-        color: COLORS.textLight,
-        backgroundColor: '#3a3350',
-        padding: { x: 18, y: 9 },
-      })
-      .setOrigin(0.5, 1)
-      .setInteractive({ useHandCursor: true });
-    retry.on(Phaser.Input.Events.POINTER_DOWN, () => {
-      Sfx.click();
-      this.scene.restart({ levelIndex: this.levelIndex });
+    // 下部の操作ボタン（全面で反応する共通ボタン）
+    makeButton(this, w / 2, h - 38, '↻ リトライ', {
+      width: 210,
+      height: 58,
+      fontSize: '24px',
+      onClick: () => this.scene.restart({ levelIndex: this.levelIndex }),
     });
-
-    // ステージ選択へ戻る（下部左）
-    const back = this.add
-      .text(20, h - 24, '◀ 選択', {
-        fontFamily: 'sans-serif',
-        fontSize: '24px',
-        color: COLORS.textLight,
-        backgroundColor: '#3a3350',
-        padding: { x: 16, y: 9 },
-      })
-      .setOrigin(0, 1)
-      .setInteractive({ useHandCursor: true });
-    back.on(Phaser.Input.Events.POINTER_DOWN, () => {
-      Sfx.click();
-      this.scene.start('LevelSelect');
+    makeButton(this, 112, h - 38, '◀ 選択', {
+      width: 168,
+      height: 58,
+      fontSize: '22px',
+      onClick: () => this.scene.start('LevelSelect'),
     });
   }
 

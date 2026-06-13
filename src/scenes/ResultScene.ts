@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { COLORS } from '../theme';
 import { AdManager } from '../ads/AdManager';
 import { SaveManager } from '../state/SaveManager';
-import { makeButton, setButtonLabel } from '../ui/Button';
+import { makeButton } from '../ui/Button';
 
 export interface ResultData {
   result: 'win' | 'lose';
@@ -83,9 +83,8 @@ export class ResultScene extends Phaser.Scene {
           onReward: () => {
             SaveManager.addCoins(reward);
             coinText.setText(`+${reward * 2} 💰`);
-            doubleBtn.disableInteractive();
-            doubleBtn.setAlpha(0.5);
-            setButtonLabel(doubleBtn, '✓ 受け取り済み');
+            doubleBtn.disable();
+            doubleBtn.setLabel('✓ 受け取り済み');
           },
         });
       },
