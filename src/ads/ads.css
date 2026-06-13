@@ -1,0 +1,177 @@
+/* ====== モック広告のスタイル（実広告ネットワークには接続しない） ====== */
+
+.ad-tag {
+  font-size: 10px;
+  background: #c9a227;
+  color: #1a1626;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* 下部バナー */
+.ad-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 64px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  background: #15121f;
+  border-top: 1px solid #2a2540;
+  color: #fff;
+  overflow: hidden;
+}
+.ad-banner-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  flex: 0 0 auto;
+}
+.ad-banner-body {
+  flex: 1;
+  min-width: 0;
+}
+.ad-banner-title {
+  font-weight: 700;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ad-banner-sub {
+  font-size: 12px;
+  color: #b9b2cf;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ad-banner-cta {
+  flex: 0 0 auto;
+  background: #53e08a;
+  color: #0e2a18;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+/* 全画面オーバーレイ（インタースティシャル / リワード） */
+.ad-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(6, 4, 12, 0.93);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #fff;
+  padding: 16px;
+  box-sizing: border-box;
+}
+.ad-top {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.ad-close {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #2a2540;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+}
+.ad-close:disabled {
+  opacity: 0.45;
+}
+.ad-card,
+.ad-video {
+  width: 100%;
+  max-width: 520px;
+  flex: 1;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+.ad-card-icon {
+  font-size: 72px;
+  line-height: 1;
+}
+.ad-card-title {
+  font-size: 30px;
+  font-weight: 800;
+}
+.ad-card-stars {
+  color: #ffd34d;
+  font-size: 18px;
+}
+.ad-card-stars span {
+  color: #fff;
+  opacity: 0.85;
+  font-size: 14px;
+}
+.ad-card-sub {
+  font-size: 16px;
+  opacity: 0.95;
+}
+.ad-cta {
+  margin-top: 10px;
+  background: #fff;
+  color: #1a1626;
+  border: none;
+  border-radius: 30px;
+  padding: 14px 40px;
+  font-size: 18px;
+  font-weight: 800;
+}
+.ad-reward-note {
+  font-size: 15px;
+  opacity: 0.95;
+}
+.ad-progress {
+  width: 80%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+.ad-progress-bar {
+  width: 0;
+  height: 100%;
+  background: #fff;
+  transition: width 4s linear;
+}
+.ad-reward-btn {
+  margin-top: 16px;
+  width: 100%;
+  max-width: 520px;
+  background: #53e08a;
+  color: #0e2a18;
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 20px;
+  font-weight: 800;
+}
+.ad-reward-btn:disabled {
+  opacity: 0.45;
+}

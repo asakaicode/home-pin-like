@@ -13,7 +13,8 @@ const waitMs = Number(process.argv[4] || 1800);
 await mkdir(dirname(out), { recursive: true });
 
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 720, height: 1280 } });
+// 高さはゲーム1280＋下部バナー64を含めて1344にし、ゲーム面を1:1に保つ
+const page = await browser.newPage({ viewport: { width: 720, height: 1344 } });
 
 const errors = [];
 page.on('console', (msg) => {

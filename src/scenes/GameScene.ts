@@ -181,7 +181,11 @@ export class GameScene extends Phaser.Scene {
     this.resolved = true;
     this.cameras.main.shake(220, 0.012);
     this.time.delayedCall(280, () => {
-      this.scene.launch('Result', { result: 'lose', levelIndex: this.levelIndex });
+      this.scene.launch('Result', {
+        result: 'lose',
+        levelIndex: this.levelIndex,
+        hasNext: this.levelIndex + 1 < LEVELS.length,
+      });
       this.scene.pause();
     });
   }

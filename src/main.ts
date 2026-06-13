@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, BG_COLOR, PHYSICS } from './config';
 import { GameScene } from './scenes/GameScene';
 import { ResultScene } from './scenes/ResultScene';
+import { AdManager } from './ads/AdManager';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -24,4 +25,9 @@ const config: Phaser.Types.Core.GameConfig = {
   scene: [GameScene, ResultScene],
 };
 
-export default new Phaser.Game(config);
+const game = new Phaser.Game(config);
+
+// 下部の常設バナー広告を設置（?noads=1 で無効）
+AdManager.mountBanner();
+
+export default game;
