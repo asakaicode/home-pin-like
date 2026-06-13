@@ -13,6 +13,10 @@ export class MenuScene extends Phaser.Scene {
   }
 
   create(): void {
+    // どの経路から来ても、残っているゲーム/リザルトを停止（画面の重なり防止）
+    this.scene.stop('Game');
+    this.scene.stop('Result');
+
     const w = this.scale.width;
     const h = this.scale.height;
     this.add.rectangle(0, 0, w, h, 0x1a1626).setOrigin(0, 0);

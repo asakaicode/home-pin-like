@@ -156,6 +156,8 @@ export class ResultScene extends Phaser.Scene {
   }
 
   private startSelect(): void {
+    // 一時停止中の GameScene を必ず停止してから選択画面へ（画面の重なりを防ぐ）
+    this.scene.stop('Game');
     this.scene.start('LevelSelect');
     this.scene.stop();
   }
