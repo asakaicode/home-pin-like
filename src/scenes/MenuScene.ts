@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS } from '../theme';
+import { COLORS, TREASURE_COLORS } from '../theme';
 import { SaveManager } from '../state/SaveManager';
 import { Sfx } from '../audio/Sfx';
 import { makeButton } from '../ui/Button';
@@ -19,7 +19,7 @@ export class MenuScene extends Phaser.Scene {
 
     const w = this.scale.width;
     const h = this.scale.height;
-    this.add.rectangle(0, 0, w, h, 0x1a1626).setOrigin(0, 0);
+    this.add.rectangle(0, 0, w, h, COLORS.exteriorDark).setOrigin(0, 0);
 
     // タイトル
     this.add
@@ -46,13 +46,16 @@ export class MenuScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    // ミニ装飾（ピンの上に宝石）
+    // ミニ装飾（釘風ピンの上に色とりどりの宝石）
     const py = h * 0.5;
-    this.add.rectangle(w / 2, py, 280, 18, COLORS.pin).setStrokeStyle(3, COLORS.pinStroke, 1);
+    const barW = 280;
+    this.add.rectangle(w / 2, py, barW, 16, COLORS.pin).setStrokeStyle(3, COLORS.pinStroke, 1);
+    this.add.circle(w / 2 - barW / 2, py, 16, COLORS.pinCap).setStrokeStyle(4, COLORS.pinStroke, 1);
+    this.add.circle(w / 2 + barW / 2, py, 16, COLORS.pinCap).setStrokeStyle(4, COLORS.pinStroke, 1);
     for (let i = 0; i < 4; i++) {
-      this.add
-        .circle(w / 2 - 66 + i * 44, py - 22, 18, COLORS.gem)
-        .setStrokeStyle(3, COLORS.gemStroke, 1);
+      const c = TREASURE_COLORS[i % TREASURE_COLORS.length];
+      const stroke = Phaser.Display.Color.IntegerToColor(c).darken(45).color;
+      this.add.circle(w / 2 - 66 + i * 44, py - 22, 18, c).setStrokeStyle(3, stroke, 1);
     }
 
     // コイン表示

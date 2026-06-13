@@ -6,6 +6,7 @@ import { Wall } from '../objects/Wall';
 import { GoalZone } from '../objects/GoalZone';
 import { HazardZone } from '../objects/HazardZone';
 import { Hero } from '../objects/Hero';
+import { TREASURE_COLORS } from '../theme';
 import type { LiquidSystem } from './LiquidSystem';
 
 export interface LoadedLevel {
@@ -17,6 +18,7 @@ export interface LoadedLevel {
 export function loadLevel(scene: Phaser.Scene, level: LevelData, liquid: LiquidSystem): LoadedLevel {
   const gems: Gem[] = [];
   const pins: Pin[] = [];
+  let gemColorIndex = 0;
 
   for (const e of level.entities) {
     switch (e.type) {
@@ -32,7 +34,9 @@ export function loadLevel(scene: Phaser.Scene, level: LevelData, liquid: LiquidS
         const r = e.r ?? 18;
         const startX = e.x - ((count - 1) * spread) / 2;
         for (let i = 0; i < count; i++) {
-          gems.push(new Gem(scene, startX + i * spread, e.y, r));
+          const color = TREASURE_COLORS[gemColorIndex % TREASURE_COLORS.length];
+          gemColorIndex += 1;
+          gems.push(new Gem(scene, startX + i * spread, e.y, r, color));
         }
         break;
       }

@@ -10,10 +10,11 @@ export class Gem {
   readonly radius: number;
   collected = false;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, radius = 18) {
+  constructor(scene: Phaser.Scene, x: number, y: number, radius = 18, color: number = COLORS.gem) {
     this.radius = radius;
-    this.go = scene.add.circle(x, y, radius, COLORS.gem);
-    this.go.setStrokeStyle(3, COLORS.gemStroke, 1);
+    const stroke = Phaser.Display.Color.IntegerToColor(color).darken(45).color;
+    this.go = scene.add.circle(x, y, radius, color);
+    this.go.setStrokeStyle(3, stroke, 1);
     this.go.setData('ref', this);
     scene.matter.add.gameObject(this.go, {
       shape: { type: 'circle', radius },

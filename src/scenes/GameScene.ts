@@ -54,6 +54,8 @@ export class GameScene extends Phaser.Scene {
     this.matter.world.setBounds(0, 0, level.world.width, level.world.height, 64);
     this.matter.world.setGravity(0, level.world.gravity);
 
+    this.drawHouse();
+
     this.liquid = new LiquidSystem(this);
     const loaded = loadLevel(this, level, this.liquid);
     this.gems = loaded.gems;
@@ -69,6 +71,25 @@ export class GameScene extends Phaser.Scene {
       // シーン終了時に world が先に破棄されている場合があるため任意連鎖でガード
       this.matter?.world?.off('collisionstart', this.onCollision, this);
     });
+  }
+
+  /** 本家風の家フレーム（紫の外観＋三角屋根＋茶色の家）を背景に描く。 */
+  private drawHouse(): void {
+    const w = this.scale.width;
+    const h = this.scale.height;
+    this.add.rectangle(0, 0, w, h, COLORS.exterior).setOrigin(0, 0);
+
+    const g = this.add.graphics();
+    // 屋根
+    g.fillStyle(COLORS.roof, 1);
+    g.fillTriangle(28, 136, w - 28, 136, w / 2, 26);
+    g.lineStyle(6, COLORS.roofDark, 1);
+    g.strokeTriangle(28, 136, w - 28, 136, w / 2, 26);
+    // 家の本体（外枠＝壁、内側＝室内）
+    g.fillStyle(COLORS.houseWall, 1);
+    g.fillRoundedRect(24, 120, w - 48, 1140, 18);
+    g.fillStyle(COLORS.houseInterior, 1);
+    g.fillRoundedRect(42, 138, w - 84, 1104, 12);
   }
 
   private buildHud(level: LevelData): void {
