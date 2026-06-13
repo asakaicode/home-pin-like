@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, BG_COLOR, PHYSICS } from './config';
-import { BootScene } from './scenes/BootScene';
+import { GameScene } from './scenes/GameScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -19,7 +19,7 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: PHYSICS.debug,
     },
   },
-  scene: [BootScene],
+  scene: [GameScene],
 };
 
 export default new Phaser.Game(config);
