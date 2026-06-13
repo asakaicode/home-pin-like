@@ -5,10 +5,15 @@ import { loadLevel } from '../systems/LevelLoader';
 import { LiquidSystem } from '../systems/LiquidSystem';
 import { Gem } from '../objects/Gem';
 import { COLORS } from '../theme';
+import { SaveManager } from '../state/SaveManager';
+import { Sfx } from '../audio/Sfx';
 
 export interface GameSceneData {
   levelIndex?: number;
 }
+
+const COIN_FIRST_CLEAR = 50;
+const COIN_REPLAY = 10;
 
 /**
  * パズル本体シーン。レベルデータを読み込み、物理・操作・勝敗判定を回す。
@@ -67,6 +72,7 @@ export class GameScene extends Phaser.Scene {
 
   private buildHud(level: LevelData): void {
     const w = this.scale.width;
+    const h = this.scale.height;
 
     this.add
       .text(20, 22, `Lv.${level.id}  ${level.name}`, {
@@ -98,8 +104,9 @@ export class GameScene extends Phaser.Scene {
         .setOrigin(0.5, 0);
     }
 
+    // リトライ（下部中央）
     const retry = this.add
-      .text(w / 2, this.scale.height - 24, '↻ リトライ', {
+      .text(w / 2, h - 24, '↻ リトライ', {
         fontFamily: 'sans-serif',
         fontSize: '24px',
         color: COLORS.textLight,
@@ -109,7 +116,24 @@ export class GameScene extends Phaser.Scene {
       .setOrigin(0.5, 1)
       .setInteractive({ useHandCursor: true });
     retry.on(Phaser.Input.Events.POINTER_DOWN, () => {
+      Sfx.click();
       this.scene.restart({ levelIndex: this.levelIndex });
+    });
+
+    // ステージ選択へ戻る（下部左）
+    const back = this.add
+      .text(20, h - 24, '◀ 選択', {
+        fontFamily: 'sans-serif',
+        fontSize: '24px',
+        color: COLORS.textLight,
+        backgroundColor: '#3a3350',
+        padding: { x: 16, y: 9 },
+      })
+      .setOrigin(0, 1)
+      .setInteractive({ useHandCursor: true });
+    back.on(Phaser.Input.Events.POINTER_DOWN, () => {
+      Sfx.click();
+      this.scene.start('LevelSelect');
     });
   }
 
@@ -156,6 +180,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private onGemCollected(): void {
+    Sfx.collect();
     this.collected++;
     this.updateHud();
     if (this.collected >= this.totalToCollect) {
@@ -166,11 +191,19 @@ export class GameScene extends Phaser.Scene {
   private win(): void {
     if (this.resolved) return;
     this.resolved = true;
+    Sfx.win();
+
+    const firstClear = SaveManager.markCleared(this.levelIndex);
+    const reward = firstClear ? COIN_FIRST_CLEAR : COIN_REPLAY;
+    SaveManager.addCoins(reward);
+    SaveManager.unlockUpTo(this.levelIndex + 1);
+
     this.time.delayedCall(320, () => {
       this.scene.launch('Result', {
         result: 'win',
         levelIndex: this.levelIndex,
         hasNext: this.levelIndex + 1 < LEVELS.length,
+        coins: reward,
       });
       this.scene.pause();
     });
@@ -179,6 +212,7 @@ export class GameScene extends Phaser.Scene {
   private lose(): void {
     if (this.resolved) return;
     this.resolved = true;
+    Sfx.lose();
     this.cameras.main.shake(220, 0.012);
     this.time.delayedCall(280, () => {
       this.scene.launch('Result', {

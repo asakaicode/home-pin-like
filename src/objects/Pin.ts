@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { COLORS } from '../theme';
+import { Sfx } from '../audio/Sfx';
 
 export interface PinOptions {
   width?: number;
@@ -51,6 +52,7 @@ export class Pin {
   pull(): void {
     if (this.pulled) return;
     this.pulled = true;
+    Sfx.pin();
 
     // 物理ボディを除去 → せき止めていた物体が落下する
     this.scene.matter.world.remove(this.body);

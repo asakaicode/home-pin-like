@@ -1,5 +1,8 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, BG_COLOR, PHYSICS } from './config';
+import { BootScene } from './scenes/BootScene';
+import { MenuScene } from './scenes/MenuScene';
+import { LevelSelectScene } from './scenes/LevelSelectScene';
 import { GameScene } from './scenes/GameScene';
 import { ResultScene } from './scenes/ResultScene';
 import { AdManager } from './ads/AdManager';
@@ -21,8 +24,8 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: PHYSICS.debug,
     },
   },
-  // 先頭の GameScene のみ自動起動。ResultScene は launch で重ねる。
-  scene: [GameScene, ResultScene],
+  // 先頭の BootScene のみ自動起動。以降は遷移で切り替える。
+  scene: [BootScene, MenuScene, LevelSelectScene, GameScene, ResultScene],
 };
 
 const game = new Phaser.Game(config);
