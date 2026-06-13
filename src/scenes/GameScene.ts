@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { LEVELS } from '../levels';
 import type { LevelData } from '../levels/levelSchema';
 import { loadLevel } from '../systems/LevelLoader';
+import { LiquidSystem } from '../systems/LiquidSystem';
 import { Gem } from '../objects/Gem';
 import { COLORS } from '../theme';
 
@@ -19,6 +20,7 @@ export class GameScene extends Phaser.Scene {
   private totalToCollect = 0;
   private collected = 0;
   private resolved = false;
+  private liquid!: LiquidSystem;
   private hudText!: Phaser.GameObjects.Text;
 
   constructor() {
@@ -26,7 +28,14 @@ export class GameScene extends Phaser.Scene {
   }
 
   init(data: GameSceneData): void {
-    this.levelIndex = data.levelIndex ?? 0;
+    let idx = data.levelIndex;
+    if (idx === undefined) {
+      // 初回起動時は ?level=N（1始まり）で開始レベルを指定できる（開発/ディープリンク用）
+      const param = new URLSearchParams(window.location.search).get('level');
+      const n = param !== null ? parseInt(param, 10) : NaN;
+      if (!Number.isNaN(n)) idx = Phaser.Math.Clamp(n - 1, 0, LEVELS.length - 1);
+    }
+    this.levelIndex = idx ?? 0;
     this.gems = [];
     this.bodyToGem = new Map();
     this.collected = 0;
@@ -39,7 +48,8 @@ export class GameScene extends Phaser.Scene {
     this.matter.world.setBounds(0, 0, level.world.width, level.world.height, 64);
     this.matter.world.setGravity(0, level.world.gravity);
 
-    const loaded = loadLevel(this, level);
+    this.liquid = new LiquidSystem(this);
+    const loaded = loadLevel(this, level, this.liquid);
     this.gems = loaded.gems;
     this.totalToCollect = level.goal.count;
     for (const g of this.gems) {
@@ -116,23 +126,31 @@ export class GameScene extends Phaser.Scene {
   }
 
   private resolvePair(a: MatterJS.BodyType, b: MatterJS.BodyType): void {
-    let gemBody: MatterJS.BodyType | null = null;
-    let other: MatterJS.BodyType | null = null;
-    if (a.label === 'gem') {
-      gemBody = a;
-      other = b;
-    } else if (b.label === 'gem') {
-      gemBody = b;
-      other = a;
+    const la = a.label;
+    const lb = b.label;
+
+    // 溶岩 × 水 → 岩
+    if ((la === 'lava' && lb === 'water') || (la === 'water' && lb === 'lava')) {
+      this.liquid.handleContact(a, b);
+      return;
     }
-    if (!gemBody || !other) return;
 
-    const gem = this.bodyToGem.get(gemBody.id);
-    if (!gem || gem.collected) return;
+    // 宝石の相互作用
+    if (la === 'gem' || lb === 'gem') {
+      const gemBody = la === 'gem' ? a : b;
+      const other = la === 'gem' ? b : a;
+      const gem = this.bodyToGem.get(gemBody.id);
+      if (!gem || gem.collected) return;
+      if (other.label === 'goal') {
+        gem.collect(other.position.x, other.position.y, () => this.onGemCollected());
+      } else if (other.label === 'hazard' || other.label === 'lava') {
+        this.lose();
+      }
+      return;
+    }
 
-    if (other.label === 'goal') {
-      gem.collect(other.position.x, other.position.y, () => this.onGemCollected());
-    } else if (other.label === 'hazard') {
+    // 溶岩 × ヒーロー → 失敗
+    if ((la === 'lava' && lb === 'hero') || (la === 'hero' && lb === 'lava')) {
       this.lose();
     }
   }

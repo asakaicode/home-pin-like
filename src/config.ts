@@ -9,6 +9,6 @@ export const BG_COLOR = '#1a1626';
 export const PHYSICS = {
   /** 下向き重力の強さ。 */
   gravityY: 1,
-  /** 開発中はワイヤーフレーム表示で挙動を確認する。 */
-  debug: true,
+  /** ワイヤーフレームのデバッグ表示。実物の見た目を確認するため通常はfalse。 */
+  debug: false,
 } as const;

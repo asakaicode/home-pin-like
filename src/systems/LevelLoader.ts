@@ -5,6 +5,8 @@ import { Gem } from '../objects/Gem';
 import { Wall } from '../objects/Wall';
 import { GoalZone } from '../objects/GoalZone';
 import { HazardZone } from '../objects/HazardZone';
+import { Hero } from '../objects/Hero';
+import type { LiquidSystem } from './LiquidSystem';
 
 export interface LoadedLevel {
   gems: Gem[];
@@ -12,7 +14,7 @@ export interface LoadedLevel {
 }
 
 /** レベルデータからシーンへ全エンティティを生成する。 */
-export function loadLevel(scene: Phaser.Scene, level: LevelData): LoadedLevel {
+export function loadLevel(scene: Phaser.Scene, level: LevelData, liquid: LiquidSystem): LoadedLevel {
   const gems: Gem[] = [];
   const pins: Pin[] = [];
 
@@ -40,8 +42,14 @@ export function loadLevel(scene: Phaser.Scene, level: LevelData): LoadedLevel {
       case 'hazardZone':
         new HazardZone(scene, e.x, e.y, e.w, e.h);
         break;
+      case 'lava':
+        liquid.spawnPool(e.x, e.y, 'lava', e.volume ?? 40);
+        break;
+      case 'water':
+        liquid.spawnPool(e.x, e.y, 'water', e.volume ?? 40);
+        break;
       case 'hero':
-        // フェーズ3で実装（溶岩到達で失敗するターゲット）。
+        new Hero(scene, e.x, e.y);
         break;
     }
   }

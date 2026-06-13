@@ -63,6 +63,22 @@ export interface HazardZoneEntity {
   h: number;
 }
 
+export interface LavaEntity {
+  type: 'lava';
+  x: number;
+  y: number;
+  /** 生成する粒子数（既定40）。 */
+  volume?: number;
+}
+
+export interface WaterEntity {
+  type: 'water';
+  x: number;
+  y: number;
+  /** 生成する粒子数（既定40）。 */
+  volume?: number;
+}
+
 export interface HeroEntity {
   type: 'hero';
   x: number;
@@ -75,6 +91,8 @@ export type EntityData =
   | GemEntity
   | GoalZoneEntity
   | HazardZoneEntity
+  | LavaEntity
+  | WaterEntity
   | HeroEntity;
 
 export interface LevelData {

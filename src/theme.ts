@@ -9,8 +9,16 @@ export const COLORS = {
   wallStroke: 0x2a2540,
   goal: 0x53e08a,
   hazard: 0xff5a4d,
+  // 液体・岩
+  lava: 0xff7a2d,
+  water: 0x2f6fe0,
+  rock: 0x6b6b7a,
+  rockStroke: 0x3f3f4a,
+  // ヒーロー
+  hero: 0xffe08a,
+  heroStroke: 0xb38b2f,
+  // UI
   panel: 0x241f33,
-  // テキスト用（CSS文字列）
   textLight: '#ffffff',
   textDim: '#c8c0e0',
   accent: '#ffd34d',
