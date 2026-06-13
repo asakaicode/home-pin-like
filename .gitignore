@@ -1,0 +1,46 @@
+# --- 計画ディレクトリ（git 追跡しない） ---
+plan/
+
+# --- Node / フロントエンド ---
+node_modules/
+dist/
+dist-ssr/
+build/
+*.local
+
+# --- ログ ---
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- エディタ / OS ---
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# --- 環境変数 ---
+.env
+.env.*
+!.env.example
+
+# --- テスト / カバレッジ ---
+coverage/
+.nyc_output/
+
+# --- キャッシュ ---
+.cache/
+.vite/
+.eslintcache
+
+# --- スクリーンショット/作業用一時ファイル ---
+tmp/
+*.png.tmp
