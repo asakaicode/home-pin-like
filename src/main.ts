@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, BG_COLOR, PHYSICS } from './config';
 import { GameScene } from './scenes/GameScene';
+import { ResultScene } from './scenes/ResultScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -19,7 +20,8 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: PHYSICS.debug,
     },
   },
-  scene: [GameScene],
+  // 先頭の GameScene のみ自動起動。ResultScene は launch で重ねる。
+  scene: [GameScene, ResultScene],
 };
 
 export default new Phaser.Game(config);

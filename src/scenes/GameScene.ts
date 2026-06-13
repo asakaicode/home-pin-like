@@ -1,37 +1,170 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT } from '../config';
-import { Pin } from '../objects/Pin';
+import { LEVELS } from '../levels';
+import type { LevelData } from '../levels/levelSchema';
+import { loadLevel } from '../systems/LevelLoader';
 import { Gem } from '../objects/Gem';
+import { COLORS } from '../theme';
+
+export interface GameSceneData {
+  levelIndex?: number;
+}
 
 /**
- * フェーズ1: 物理サンドボックス。
- * ピンの上に宝石を乗せ、ピンをタップして抜くと宝石が落下することを確認する。
- * 後続フェーズで LevelLoader 駆動の本格的なパズルへ置き換える。
+ * パズル本体シーン。レベルデータを読み込み、物理・操作・勝敗判定を回す。
  */
 export class GameScene extends Phaser.Scene {
+  private levelIndex = 0;
+  private gems: Gem[] = [];
+  private bodyToGem = new Map<number, Gem>();
+  private totalToCollect = 0;
+  private collected = 0;
+  private resolved = false;
+  private hudText!: Phaser.GameObjects.Text;
+
   constructor() {
     super('Game');
   }
 
+  init(data: GameSceneData): void {
+    this.levelIndex = data.levelIndex ?? 0;
+    this.gems = [];
+    this.bodyToGem = new Map();
+    this.collected = 0;
+    this.resolved = false;
+  }
+
   create(): void {
-    this.matter.world.setBounds(0, 0, GAME_WIDTH, GAME_HEIGHT, 64);
+    const level = LEVELS[this.levelIndex % LEVELS.length];
 
-    this.add
-      .text(GAME_WIDTH / 2, 70, 'Phase 1 — ピンをタップして抜こう', {
-        fontFamily: 'sans-serif',
-        fontSize: '30px',
-        color: '#ffffff',
-      })
-      .setOrigin(0.5);
+    this.matter.world.setBounds(0, 0, level.world.width, level.world.height, 64);
+    this.matter.world.setGravity(0, level.world.gravity);
 
-    // 上段: ピンの上に宝石クラスタが乗っている
-    new Pin(this, 360, 520, { width: 320 });
-    for (let i = 0; i < 6; i++) {
-      new Gem(this, 250 + i * 44, 440 - (i % 2) * 26);
+    const loaded = loadLevel(this, level);
+    this.gems = loaded.gems;
+    this.totalToCollect = level.goal.count;
+    for (const g of this.gems) {
+      this.bodyToGem.set(g.body.id, g);
     }
 
-    // 下段: 落ちた宝石を受け止める段差ピン
-    new Pin(this, 250, 820, { width: 260 });
-    new Pin(this, 520, 1000, { width: 220 });
+    this.buildHud(level);
+
+    this.matter.world.on('collisionstart', this.onCollision, this);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      // シーン終了時に world が先に破棄されている場合があるため任意連鎖でガード
+      this.matter?.world?.off('collisionstart', this.onCollision, this);
+    });
+  }
+
+  private buildHud(level: LevelData): void {
+    const w = this.scale.width;
+
+    this.add
+      .text(20, 22, `Lv.${level.id}  ${level.name}`, {
+        fontFamily: 'sans-serif',
+        fontSize: '26px',
+        color: COLORS.textLight,
+      })
+      .setOrigin(0, 0);
+
+    this.hudText = this.add
+      .text(w - 20, 22, '', {
+        fontFamily: 'sans-serif',
+        fontSize: '28px',
+        color: COLORS.accent,
+        fontStyle: 'bold',
+      })
+      .setOrigin(1, 0);
+    this.updateHud();
+
+    if (level.hint) {
+      this.add
+        .text(w / 2, 66, level.hint, {
+          fontFamily: 'sans-serif',
+          fontSize: '20px',
+          color: COLORS.textDim,
+          align: 'center',
+          wordWrap: { width: w - 60 },
+        })
+        .setOrigin(0.5, 0);
+    }
+
+    const retry = this.add
+      .text(w / 2, this.scale.height - 24, '↻ リトライ', {
+        fontFamily: 'sans-serif',
+        fontSize: '24px',
+        color: COLORS.textLight,
+        backgroundColor: '#3a3350',
+        padding: { x: 18, y: 9 },
+      })
+      .setOrigin(0.5, 1)
+      .setInteractive({ useHandCursor: true });
+    retry.on(Phaser.Input.Events.POINTER_DOWN, () => {
+      this.scene.restart({ levelIndex: this.levelIndex });
+    });
+  }
+
+  private updateHud(): void {
+    this.hudText.setText(`💎 ${this.collected} / ${this.totalToCollect}`);
+  }
+
+  private onCollision(event: Phaser.Physics.Matter.Events.CollisionStartEvent): void {
+    if (this.resolved) return;
+    for (const pair of event.pairs) {
+      this.resolvePair(pair.bodyA as MatterJS.BodyType, pair.bodyB as MatterJS.BodyType);
+      if (this.resolved) return;
+    }
+  }
+
+  private resolvePair(a: MatterJS.BodyType, b: MatterJS.BodyType): void {
+    let gemBody: MatterJS.BodyType | null = null;
+    let other: MatterJS.BodyType | null = null;
+    if (a.label === 'gem') {
+      gemBody = a;
+      other = b;
+    } else if (b.label === 'gem') {
+      gemBody = b;
+      other = a;
+    }
+    if (!gemBody || !other) return;
+
+    const gem = this.bodyToGem.get(gemBody.id);
+    if (!gem || gem.collected) return;
+
+    if (other.label === 'goal') {
+      gem.collect(other.position.x, other.position.y, () => this.onGemCollected());
+    } else if (other.label === 'hazard') {
+      this.lose();
+    }
+  }
+
+  private onGemCollected(): void {
+    this.collected++;
+    this.updateHud();
+    if (this.collected >= this.totalToCollect) {
+      this.win();
+    }
+  }
+
+  private win(): void {
+    if (this.resolved) return;
+    this.resolved = true;
+    this.time.delayedCall(320, () => {
+      this.scene.launch('Result', {
+        result: 'win',
+        levelIndex: this.levelIndex,
+        hasNext: this.levelIndex + 1 < LEVELS.length,
+      });
+      this.scene.pause();
+    });
+  }
+
+  private lose(): void {
+    if (this.resolved) return;
+    this.resolved = true;
+    this.cameras.main.shake(220, 0.012);
+    this.time.delayedCall(280, () => {
+      this.scene.launch('Result', { result: 'lose', levelIndex: this.levelIndex });
+      this.scene.pause();
+    });
   }
 }

@@ -1,8 +1,11 @@
 import Phaser from 'phaser';
+import { COLORS } from '../theme';
 
 export interface PinOptions {
   width?: number;
   height?: number;
+  /** 度数法の傾き（任意）。傾けると台として宝石を転がせる。 */
+  angle?: number;
   color?: number;
 }
 
@@ -16,20 +19,23 @@ export class Pin {
   private body: MatterJS.BodyType;
   private pulled = false;
 
-  /** 抜かれた瞬間に呼ばれるコールバック（後続フェーズの勝敗判定などで使用）。 */
+  /** 抜かれた瞬間に呼ばれるコールバック（勝敗判定などで使用）。 */
   onPulled?: (pin: Pin) => void;
 
   constructor(scene: Phaser.Scene, x: number, y: number, opts: PinOptions = {}) {
     this.scene = scene;
     const w = opts.width ?? 220;
     const h = opts.height ?? 18;
-    const color = opts.color ?? 0xffd34d;
+    const angleDeg = opts.angle ?? 0;
+    const color = opts.color ?? COLORS.pin;
 
     this.go = scene.add.rectangle(x, y, w, h, color);
-    this.go.setStrokeStyle(3, 0x7a5b00, 1);
+    this.go.setStrokeStyle(3, COLORS.pinStroke, 1);
+    this.go.setAngle(angleDeg);
     scene.matter.add.gameObject(this.go, {
       isStatic: true,
       label: 'pin',
+      angle: Phaser.Math.DegToRad(angleDeg),
       friction: 0.6,
     });
     this.body = this.go.body as MatterJS.BodyType;
@@ -54,7 +60,7 @@ export class Pin {
     this.scene.tweens.add({
       targets: this.go,
       x: this.go.x + dir * 520,
-      angle: dir * 14,
+      angle: this.go.angle + dir * 14,
       alpha: 0,
       duration: 260,
       ease: 'Quad.easeIn',
